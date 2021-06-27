@@ -29566,7 +29566,255 @@ if ("development" === 'production') {
 } else {
   module.exports = require('./cjs/react-dom.development.js');
 }
-},{"./cjs/react-dom.development.js":"../node_modules/react-dom/cjs/react-dom.development.js"}],"../src/App.tsx":[function(require,module,exports) {
+},{"./cjs/react-dom.development.js":"../node_modules/react-dom/cjs/react-dom.development.js"}],"../src/flux/Context.ts":[function(require,module,exports) {
+"use strict";
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var react_1 = __importDefault(require("react"));
+
+var Context = react_1.default.createContext({});
+exports.default = Context;
+},{"react":"../node_modules/react/index.js"}],"../src/SearchBox.tsx":[function(require,module,exports) {
+"use strict";
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var react_1 = __importDefault(require("react"));
+
+var react_2 = require("react");
+
+var Context_1 = __importDefault(require("./flux/Context"));
+
+function SearchBox() {
+  var _a = react_2.useContext(Context_1.default),
+      state = _a.state,
+      dispatch = _a.dispatch;
+
+  function texthandler(e) {
+    dispatch({
+      type: "Write",
+      payload: {
+        inputquery: e.target.value
+      }
+    });
+  }
+
+  function searchhandler(e) {
+    fetchpokeinfo(state.searchbox.query, dispatch);
+  }
+
+  return react_1.default.createElement("div", null, react_1.default.createElement("input", {
+    type: "text",
+    value: state.searchbox.query,
+    onChange: function onChange(e) {
+      return texthandler(e);
+    }
+  }), react_1.default.createElement("button", {
+    type: "button",
+    onClick: function onClick(e) {
+      return searchhandler(e);
+    }
+  }, "\u691C\u7D22"));
+}
+
+exports.default = SearchBox;
+
+function fetchpokeinfo(query, dispatch) {
+  var uri = "https://pokeapi.co/api/v2/pokemon/" + query;
+  fetch(uri).then(function (res) {
+    return res.json();
+  }).then(function (jsdata) {
+    var pokeinfo = {
+      id: jsdata["id"],
+      pokename: jsdata["name"],
+      frontimgurl: jsdata["sprites"]["front_default"],
+      backimgurl: jsdata["sprites"]["back_default"],
+      abilities: [],
+      items: []
+    };
+    console.log(jsdata["abilities"]);
+    jsdata["abilities"].forEach(function (ability) {
+      return pokeinfo["abilities"].push(ability["ability"]["name"]);
+    });
+    jsdata["held_items"].forEach(function (item) {
+      return pokeinfo["items"].push(item["item"]["name"]);
+    });
+    console.log();
+    dispatch({
+      type: "Fetch",
+      payload: {
+        pokemoninfo: pokeinfo
+      }
+    });
+  });
+}
+},{"react":"../node_modules/react/index.js","./flux/Context":"../src/flux/Context.ts"}],"../src/PokemonInfo.tsx":[function(require,module,exports) {
+"use strict";
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var react_1 = __importStar(require("react"));
+
+var Context_1 = __importDefault(require("./flux/Context"));
+
+function PokemonInfo(props) {
+  var _a = react_1.useContext(Context_1.default),
+      state = _a.state,
+      dispatch = _a.dispatch;
+
+  return react_1.default.createElement("div", null, react_1.default.createElement("p", null, react_1.default.createElement(PlainText, {
+    title: "id",
+    text: state.pokemoninfo.id
+  })), react_1.default.createElement("p", null, react_1.default.createElement(PlainText, {
+    title: "name",
+    text: state.pokemoninfo.pokename
+  })), react_1.default.createElement("p", null, react_1.default.createElement(Image, {
+    url: state.pokemoninfo.frontimgurl
+  }), react_1.default.createElement(react_1.default.Fragment, null, " "), react_1.default.createElement(Image, {
+    url: state.pokemoninfo.backimgurl
+  })), react_1.default.createElement("p", null, react_1.default.createElement(UnorderedList, {
+    title: "abilities",
+    list: state.pokemoninfo.abilities
+  })), react_1.default.createElement("p", null, react_1.default.createElement(UnorderedList, {
+    title: "items",
+    list: state.pokemoninfo.items
+  })));
+}
+
+exports.default = PokemonInfo;
+
+function PlainText(props) {
+  return react_1.default.createElement("text", null, props.title, ":", props.text);
+}
+
+function Image(props) {
+  return react_1.default.createElement("img", {
+    src: props.url,
+    width: "100",
+    height: "100"
+  });
+}
+
+function UnorderedList(props) {
+  var litags = props.list.map(function (elem) {
+    return react_1.default.createElement("li", null, elem);
+  });
+  return react_1.default.createElement("div", null, react_1.default.createElement("text", null, props.title, ":"), react_1.default.createElement("ul", null, litags));
+}
+},{"react":"../node_modules/react/index.js","./flux/Context":"../src/flux/Context.ts"}],"../src/flux/State.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var inititalState = {
+  searchbox: {
+    query: "25"
+  },
+  pokemoninfo: {
+    id: "25",
+    pokename: "pikachu",
+    frontimgurl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+    backimgurl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/25.png",
+    abilities: ["static", "lightning-rod"],
+    items: ["oran-berry", "light-ball"]
+  }
+};
+exports.default = inititalState;
+},{}],"../src/flux/Reducer.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "Fetch":
+      {
+        return {
+          searchbox: state.searchbox,
+          pokemoninfo: action.payload.pokemoninfo
+        };
+      }
+
+    case "Write":
+      {
+        var newquery = action.payload.inputquery;
+        return {
+          searchbox: {
+            query: newquery
+          },
+          pokemoninfo: state.pokemoninfo
+        };
+      }
+
+    default:
+      return state;
+  }
+}
+
+exports.default = reducer;
+},{}],"../src/App.tsx":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -29581,12 +29829,35 @@ Object.defineProperty(exports, "__esModule", {
 
 var react_1 = __importDefault(require("react"));
 
+var react_2 = require("react");
+
+var SearchBox_1 = __importDefault(require("./SearchBox"));
+
+var PokemonInfo_1 = __importDefault(require("./PokemonInfo"));
+
+var State_1 = __importDefault(require("./flux/State"));
+
+var Context_1 = __importDefault(require("./flux/Context"));
+
+var Reducer_1 = __importDefault(require("./flux/Reducer"));
+
 function App() {
-  return react_1.default.createElement("div", null, "Hello, world.");
+  var _a = react_2.useReducer(Reducer_1.default, State_1.default),
+      state = _a[0],
+      dispatch = _a[1];
+
+  var context = {
+    state: state,
+    dispatch: dispatch
+  }; //console.log(state)
+
+  return react_1.default.createElement("div", null, react_1.default.createElement(Context_1.default.Provider, {
+    value: context
+  }, react_1.default.createElement(SearchBox_1.default, null), react_1.default.createElement(PokemonInfo_1.default, null)));
 }
 
 exports.default = App;
-},{"react":"../node_modules/react/index.js"}],"../src/index.tsx":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","./SearchBox":"../src/SearchBox.tsx","./PokemonInfo":"../src/PokemonInfo.tsx","./flux/State":"../src/flux/State.ts","./flux/Context":"../src/flux/Context.ts","./flux/Reducer":"../src/flux/Reducer.ts"}],"../src/index.tsx":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -29634,7 +29905,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56765" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59590" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
